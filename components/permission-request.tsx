@@ -165,9 +165,9 @@ export function PermissionRequestManager({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="erc20-token-periodic">ERC-20 Periodic (e.g., 10 USDC/day)</SelectItem>
-              <SelectItem value="erc20-token-allowance">ERC-20 Allowance (e.g., 100 USDC total)</SelectItem>
+              <SelectItem value="erc20-token-streaming">ERC-20 Streaming (linear rate per second)</SelectItem>
               <SelectItem value="native-token-periodic">Native Token Periodic (e.g., 0.01 ETH/day)</SelectItem>
-              <SelectItem value="native-token-allowance">Native Token Allowance (e.g., 0.1 ETH total)</SelectItem>
+              <SelectItem value="native-token-streaming">Native Token Streaming (linear rate per second)</SelectItem>
             </SelectContent>
           </Select>
         </div>

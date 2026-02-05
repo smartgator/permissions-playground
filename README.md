@@ -8,9 +8,9 @@ A Next.js application for exploring MetaMask Smart Accounts with ERC-7715 permis
 - **Session Accounts**: Create session accounts that receive permissions from your main wallet
 - **Permission Requests**: Request 4 types of MetaMask-supported ERC-7715 permissions:
   - `erc20-token-periodic`: Periodic allowance for ERC-20 tokens (e.g., 10 USDC/day)
-  - `erc20-token-allowance`: One-time allowance for ERC-20 tokens (e.g., 100 USDC total)
+  - `erc20-token-streaming`: Linear streaming rate for ERC-20 tokens (tokens accrue per second)
   - `native-token-periodic`: Periodic allowance for native tokens (e.g., 0.01 ETH/day)
-  - `native-token-allowance`: One-time allowance for native tokens (e.g., 0.1 ETH total)
+  - `native-token-streaming`: Linear streaming rate for native tokens (ETH accrues per second)
 - **Permission Redemption**: Execute transfers using granted permissions
 
 ## Tech Stack
@@ -87,9 +87,9 @@ npm run build
 
 1. Select a permission type:
    - **ERC-20 Periodic**: For recurring transfers (e.g., subscription payments)
-   - **ERC-20 Allowance**: For one-time spending limit
+   - **ERC-20 Streaming**: For continuous streaming transfers (tokens accrue linearly)
    - **Native Token Periodic**: For recurring ETH transfers
-   - **Native Token Allowance**: For ETH spending limit
+   - **Native Token Streaming**: For continuous ETH streaming (ETH accrues linearly)
 2. Enter the token amount
 3. Select period duration (for periodic permissions)
 4. Provide a justification for the permission

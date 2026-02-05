@@ -43,9 +43,9 @@ export async function createSessionAccount(signerAccount: ReturnType<typeof priv
 // Permission types supported by MetaMask
 export type PermissionType = 
   | 'erc20-token-periodic'
-  | 'erc20-token-allowance'
+  | 'erc20-token-streaming'
   | 'native-token-periodic'
-  | 'native-token-allowance';
+  | 'native-token-streaming';
 
 // Permission request parameters
 export interface PermissionRequest {
@@ -87,14 +87,14 @@ export function createPermissionParams(
         },
       };
 
-    case 'erc20-token-allowance':
+    case 'erc20-token-streaming':
       return {
         ...baseParams,
         permission: {
-          type: 'erc20-token-allowance' as const,
+          type: 'erc20-token-streaming' as const,
           data: {
             tokenAddress: request.tokenAddress || USDC_SEPOLIA,
-            allowance: parseUnits(request.amount, 6),
+            amountPerSecond: parseUnits(request.amount, 6),
             justification: request.justification,
           },
         },
@@ -113,13 +113,13 @@ export function createPermissionParams(
         },
       };
 
-    case 'native-token-allowance':
+    case 'native-token-streaming':
       return {
         ...baseParams,
         permission: {
-          type: 'native-token-allowance' as const,
+          type: 'native-token-streaming' as const,
           data: {
-            allowance: parseEther(request.amount),
+            amountPerSecond: parseEther(request.amount),
             justification: request.justification,
           },
         },
@@ -202,9 +202,9 @@ export async function redeemPermission(
 export function formatPermissionType(type: PermissionType): string {
   const labels: Record<PermissionType, string> = {
     'erc20-token-periodic': 'ERC-20 Periodic',
-    'erc20-token-allowance': 'ERC-20 Allowance',
+    'erc20-token-streaming': 'ERC-20 Streaming',
     'native-token-periodic': 'Native Token Periodic',
-    'native-token-allowance': 'Native Token Allowance',
+    'native-token-streaming': 'Native Token Streaming',
   };
   return labels[type];
 }
