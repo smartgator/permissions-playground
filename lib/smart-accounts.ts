@@ -53,6 +53,9 @@ export interface PermissionRequest {
   tokenAddress?: Address;
   amount: string;
   periodDuration?: number; // in seconds
+  initialAmount?: string;
+  maxAmount?: string;
+  startTime?: number;
   justification: string;
 }
 
@@ -60,7 +63,8 @@ export interface PermissionRequest {
 export function createPermissionParams(
   request: PermissionRequest,
   sessionAccountAddress: Address,
-  expiry: number
+  expiry: number,
+  isAdjustmentAllowed: boolean = true
 ) {
   const baseParams = {
     chainId: sepolia.id,
@@ -69,7 +73,7 @@ export function createPermissionParams(
       type: 'account' as const,
       data: { address: sessionAccountAddress },
     },
-    isAdjustmentAllowed: true,
+    isAdjustmentAllowed,
   };
 
   switch (request.type) {
@@ -88,15 +92,25 @@ export function createPermissionParams(
       };
 
     case 'erc20-token-streaming':
+      const erc20StreamingData: any = {
+        tokenAddress: request.tokenAddress || USDC_SEPOLIA,
+        amountPerSecond: parseUnits(request.amount, 6),
+        justification: request.justification,
+      };
+      if (request.initialAmount) {
+        erc20StreamingData.initialAmount = parseUnits(request.initialAmount, 6);
+      }
+      if (request.maxAmount) {
+        erc20StreamingData.maxAmount = parseUnits(request.maxAmount, 6);
+      }
+      if (request.startTime) {
+        erc20StreamingData.startTime = request.startTime;
+      }
       return {
         ...baseParams,
         permission: {
           type: 'erc20-token-streaming' as const,
-          data: {
-            tokenAddress: request.tokenAddress || USDC_SEPOLIA,
-            amountPerSecond: parseUnits(request.amount, 6),
-            justification: request.justification,
-          },
+          data: erc20StreamingData,
         },
       };
 
@@ -114,14 +128,24 @@ export function createPermissionParams(
       };
 
     case 'native-token-streaming':
+      const nativeStreamingData: any = {
+        amountPerSecond: parseEther(request.amount),
+        justification: request.justification,
+      };
+      if (request.initialAmount) {
+        nativeStreamingData.initialAmount = parseEther(request.initialAmount);
+      }
+      if (request.maxAmount) {
+        nativeStreamingData.maxAmount = parseEther(request.maxAmount);
+      }
+      if (request.startTime) {
+        nativeStreamingData.startTime = request.startTime;
+      }
       return {
         ...baseParams,
         permission: {
           type: 'native-token-streaming' as const,
-          data: {
-            amountPerSecond: parseEther(request.amount),
-            justification: request.justification,
-          },
+          data: nativeStreamingData,
         },
       };
 

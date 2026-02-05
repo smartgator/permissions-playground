@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   PermissionType, 
   PermissionRequest, 
@@ -44,12 +45,22 @@ export function PermissionRequestManager({
   const [tokenAddress, setTokenAddress] = useState<string>(USDC_SEPOLIA);
   const [amount, setAmount] = useState('');
   const [periodDuration, setPeriodDuration] = useState<string>('86400'); // 1 day in seconds
+  const [initialAmount, setInitialAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
+  const [startTime, setStartTime] = useState('');
   const [justification, setJustification] = useState('');
+  const [isAdjustmentAllowed, setIsAdjustmentAllowed] = useState(true);
+  const [expiryDate, setExpiryDate] = useState(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const needsTokenAddress = permissionType.includes('erc20');
   const needsPeriodDuration = permissionType.includes('periodic');
+  const isStreaming = permissionType.includes('streaming');
 
   const handleRequestPermission = async () => {
     if (!isConnected) {
@@ -77,16 +88,29 @@ export function PermissionRequestManager({
     setError(null);
 
     try {
+      // Convert local datetime to Unix timestamp (seconds)
+      const expiryTimestamp = Math.floor(new Date(expiryDate).getTime() / 1000);
+      
+      // Convert startTime to timestamp if provided
+      const startTimeTimestamp = startTime ? Math.floor(new Date(startTime).getTime() / 1000) : undefined;
+
       const request: PermissionRequest = {
         type: permissionType,
         tokenAddress: needsTokenAddress ? (tokenAddress as `0x${string}`) : undefined,
         amount,
         periodDuration: needsPeriodDuration ? parseInt(periodDuration) : undefined,
+        initialAmount: isStreaming && initialAmount ? initialAmount : undefined,
+        maxAmount: isStreaming && maxAmount ? maxAmount : undefined,
+        startTime: isStreaming && startTimeTimestamp ? startTimeTimestamp : undefined,
         justification,
       };
 
-      const expiry = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60; // 1 week
-      const params = createPermissionParams(request, sessionAccount.address, expiry);
+      const params = createPermissionParams(
+        request, 
+        sessionAccount.address, 
+        expiryTimestamp,
+        isAdjustmentAllowed
+      );
       
       const granted = await requestPermissions(walletClient, params);
       
@@ -190,21 +214,24 @@ export function PermissionRequestManager({
 
         <div className="space-y-2">
           <Label htmlFor="amount">
-            {permissionType.includes('native') ? 'Amount (ETH)' : 'Amount'}
+            {permissionType.includes('streaming') 
+              ? (permissionType.includes('native') ? 'Amount Per Second (ETH)' : 'Amount Per Second')
+              : (permissionType.includes('native') ? 'Amount (ETH)' : 'Amount')
+            }
           </Label>
           <Input
             id="amount"
             type="number"
-            step="0.001"
+            step="0.000001"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder={permissionType.includes('native') ? "0.01" : "10"}
+            placeholder={permissionType.includes('streaming') ? "0.0001" : (permissionType.includes('native') ? "0.01" : "10")}
           />
         </div>
 
         {needsPeriodDuration && (
           <div className="space-y-2">
-            <Label htmlFor="periodDuration">Period Duration (seconds)</Label>
+            <Label htmlFor="periodDuration">Period Duration</Label>
             <Select 
               value={periodDuration} 
               onValueChange={(v: string) => setPeriodDuration(v)}
@@ -222,6 +249,70 @@ export function PermissionRequestManager({
           </div>
         )}
 
+        {isStreaming && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="initialAmount">
+                Initial Amount (Optional) {permissionType.includes('native') ? '(ETH)' : ''}
+              </Label>
+              <Input
+                id="initialAmount"
+                type="number"
+                step="0.001"
+                value={initialAmount}
+                onChange={(e) => setInitialAmount(e.target.value)}
+                placeholder="0"
+              />
+              <p className="text-sm text-neutral-500">
+                Amount available immediately at start time (default: 0)
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="maxAmount">
+                Max Amount (Optional) {permissionType.includes('native') ? '(ETH)' : ''}
+              </Label>
+              <Input
+                id="maxAmount"
+                type="number"
+                step="0.001"
+                value={maxAmount}
+                onChange={(e) => setMaxAmount(e.target.value)}
+                placeholder="No limit"
+              />
+              <p className="text-sm text-neutral-500">
+                Maximum total amount that can be unlocked (default: no limit)
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="startTime">Start Time (Optional)</Label>
+              <Input
+                id="startTime"
+                type="datetime-local"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
+              <p className="text-sm text-neutral-500">
+                When streaming begins (default: current time)
+              </p>
+            </div>
+          </>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="expiryDate">Expiry</Label>
+          <Input
+            id="expiryDate"
+            type="datetime-local"
+            value={expiryDate}
+            onChange={(e) => setExpiryDate(e.target.value)}
+          />
+          <p className="text-sm text-neutral-500">
+            When the permission expires (default: 1 day from now)
+          </p>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="justification">Justification</Label>
           <Input
@@ -233,6 +324,22 @@ export function PermissionRequestManager({
           <p className="text-sm text-neutral-500">
             This will be shown to the user in MetaMask&apos;s permission UI
           </p>
+        </div>
+
+        <div className="flex items-center gap-2 p-3 bg-neutral-50 rounded">
+          <Checkbox
+            id="isAdjustmentAllowed"
+            checked={isAdjustmentAllowed}
+            onCheckedChange={(checked) => setIsAdjustmentAllowed(checked as boolean)}
+          />
+          <div className="grid gap-1.5 leading-none">
+            <Label htmlFor="isAdjustmentAllowed" className="text-sm font-medium cursor-pointer">
+              Allow user to adjust permission limits
+            </Label>
+            <p className="text-xs text-neutral-500">
+              Users can modify the requested amounts in MetaMask
+            </p>
+          </div>
         </div>
 
         {error && (
