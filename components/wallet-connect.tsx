@@ -1,14 +1,13 @@
 'use client';
 
-import { useAccount, useConnect, useDisconnect, useChainId, useSwitchChain } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import { sepolia } from 'wagmi/chains';
 import { Button } from '@/components/ui/button';
 import { Wallet, LogOut, AlertCircle } from 'lucide-react';
 
 export function WalletConnect() {
-  const { address, isConnected } = useAccount();
-  const chainId = useChainId();
+  const { address, isConnected, chainId } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();
