@@ -44,9 +44,19 @@ cd /path/to/permissions-playground/my-app
 npm install
 ```
 
-### 3. Set Up Environment Variables
+### 3. Set Up Environment Variables (Required)
 
-Create a `.env.local` file in the project root:
+Create a `.env.local` file in the project root. The following environment variable is **mandatory**:
+
+```bash
+# Required: Bundler RPC URL for ERC-4337 UserOperations
+# Get a free bundler from Pimlico: https://docs.pimlico.io/
+NEXT_PUBLIC_BUNDLER_RPC_URL=https://api.pimlico.io/v2/sepolia/rpc?apikey=YOUR_API_KEY
+```
+
+**Note:** The app will fail to redeem permissions without a valid bundler RPC URL. You can get a free API key from [Pimlico](https://docs.pimlico.io/) or use any other ERC-4337 bundler service.
+
+Optional variables:
 
 ```bash
 # Optional: Alchemy or Infura RPC for better reliability

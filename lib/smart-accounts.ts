@@ -142,6 +142,19 @@ export async function requestPermissions(
   return grantedPermissions;
 }
 
+// Get bundler RPC URL from environment
+function getBundlerTransport() {
+  const bundlerUrl = process.env.NEXT_PUBLIC_BUNDLER_RPC_URL;
+  if (!bundlerUrl) {
+    throw new Error(
+      'NEXT_PUBLIC_BUNDLER_RPC_URL environment variable is required. ' +
+      'Please set it to your bundler RPC URL (e.g., https://api.pimlico.io/v2/sepolia/rpc). ' +
+      'See https://docs.pimlico.io/ for more information.'
+    );
+  }
+  return http(bundlerUrl);
+}
+
 // Redeem permission - execute transfer
 export async function redeemPermission(
   sessionAccount: Awaited<ReturnType<typeof createSessionAccount>>,
@@ -160,7 +173,7 @@ export async function redeemPermission(
   // Create bundler client with permission actions
   const bundlerClient = createBundlerClient({
     client: publicClient,
-    transport: http(),
+    transport: getBundlerTransport(),
     paymaster: true,
   }).extend(erc7710BundlerActions());
 
