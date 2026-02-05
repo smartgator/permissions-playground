@@ -11,7 +11,7 @@ import type { Hex, Address } from "viem";
 
 interface GrantedPermission {
   context: Hex;
-  signerMeta: { delegationManager: Address };
+  signerMeta: any;
   params: PermissionRequest;
 }
 

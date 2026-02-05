@@ -23,12 +23,12 @@ interface PermissionRequestProps {
   sessionAccount: Awaited<ReturnType<typeof createSessionAccount>> | null;
   onPermissionGranted: (permission: {
     context: `0x${string}`;
-    signerMeta: { delegationManager: `0x${string}` };
+    signerMeta: any;
     params: PermissionRequest;
   }) => void;
   grantedPermission: {
     context: `0x${string}`;
-    signerMeta: { delegationManager: `0x${string}` };
+    signerMeta: any;
     params: PermissionRequest;
   } | null;
 }

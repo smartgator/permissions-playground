@@ -65,7 +65,7 @@ export function createPermissionParams(
   sessionAccountAddress: Address,
   expiry: number,
   isAdjustmentAllowed: boolean = true
-) {
+): any {
   const baseParams = {
     chainId: sepolia.id,
     expiry,
@@ -184,7 +184,7 @@ export async function redeemPermission(
   sessionAccount: Awaited<ReturnType<typeof createSessionAccount>>,
   grantedPermission: {
     context: Hex;
-    signerMeta: { delegationManager: Address };
+    signerMeta: { delegationManager: Address } | { delegationManager?: Address; userOpBuilder?: Address };
   },
   transferParams: {
     to: Address;
@@ -197,7 +197,7 @@ export async function redeemPermission(
   // Create bundler client with permission actions
   const bundlerClient = createBundlerClient({
     client: publicClient,
-    transport: getBundlerUrl(),
+    transport: http(getBundlerUrl()),
     paymaster: true,
   }).extend(erc7710BundlerActions());
 
@@ -217,16 +217,25 @@ export async function redeemPermission(
     });
   }
 
+  // Extract delegationManager from signerMeta
+  const delegationManager = 'delegationManager' in grantedPermission.signerMeta 
+    ? grantedPermission.signerMeta.delegationManager 
+    : undefined;
+
+  if (!delegationManager) {
+    throw new Error('delegationManager not found in granted permission');
+  }
+
   // Send user operation with delegation
   const userOpHash = await bundlerClient.sendUserOperationWithDelegation({
-    publicClient,
+    publicClient: publicClient as any,
     account: sessionAccount,
     calls: [
       {
         to: transferParams.tokenAddress || transferParams.to,
         data: calldata,
         permissionsContext: grantedPermission.context,
-        delegationManager: grantedPermission.signerMeta.delegationManager,
+        delegationManager,
         value: isNativeToken ? parseEther(transferParams.amount) : 0n,
       },
     ],
