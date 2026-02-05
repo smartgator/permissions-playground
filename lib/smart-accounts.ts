@@ -143,7 +143,7 @@ export async function requestPermissions(
 }
 
 // Get bundler RPC URL from environment
-function getBundlerTransport() {
+function getBundlerUrl(): string {
   const bundlerUrl = process.env.NEXT_PUBLIC_BUNDLER_RPC_URL;
   if (!bundlerUrl) {
     throw new Error(
@@ -152,7 +152,7 @@ function getBundlerTransport() {
       'See https://docs.pimlico.io/ for more information.'
     );
   }
-  return http(bundlerUrl);
+  return bundlerUrl;
 }
 
 // Redeem permission - execute transfer
@@ -173,7 +173,7 @@ export async function redeemPermission(
   // Create bundler client with permission actions
   const bundlerClient = createBundlerClient({
     client: publicClient,
-    transport: getBundlerTransport(),
+    transport: getBundlerUrl(),
     paymaster: true,
   }).extend(erc7710BundlerActions());
 
