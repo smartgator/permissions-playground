@@ -1,16 +1,15 @@
 'use client';
 
-import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import { sepolia } from 'wagmi/chains';
 import { Button } from '@/components/ui/button';
-import { Wallet, LogOut, AlertCircle } from 'lucide-react';
+import { Wallet, LogOut } from 'lucide-react';
 
 export function WalletConnect() {
   const { address, isConnected, chainId } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
-  const { switchChain } = useSwitchChain();
 
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -37,23 +36,13 @@ export function WalletConnect() {
         </div>
         
         {isWrongChain && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm text-red-700 font-medium">
-                Wrong Network
-              </p>
-              <p className="text-xs text-red-600">
-                Please switch to Sepolia testnet to use this app
-              </p>
-            </div>
-            <Button 
-              size="sm" 
-              onClick={() => switchChain({ chainId: sepolia.id })}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Switch to Sepolia
-            </Button>
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-700 font-medium">
+              ⚠️ Wrong Network
+            </p>
+            <p className="text-xs text-red-600 mt-1">
+              Please switch to Sepolia testnet in MetaMask to use this app
+            </p>
           </div>
         )}
       </div>
