@@ -43,9 +43,9 @@ export async function createSessionAccount(signerAccount: ReturnType<typeof priv
 // Permission types supported by MetaMask
 export type PermissionType = 
   | 'erc20-token-periodic'
-  | 'erc20-token-streaming'
+  | 'erc20-token-stream'
   | 'native-token-periodic'
-  | 'native-token-streaming';
+  | 'native-token-stream';
 
 // Permission request parameters
 export interface PermissionRequest {
@@ -91,7 +91,7 @@ export function createPermissionParams(
         },
       };
 
-    case 'erc20-token-streaming':
+    case 'erc20-token-stream':
       const erc20StreamingData: any = {
         tokenAddress: request.tokenAddress || USDC_SEPOLIA,
         amountPerSecond: parseUnits(request.amount, 6),
@@ -109,7 +109,7 @@ export function createPermissionParams(
       return {
         ...baseParams,
         permission: {
-          type: 'erc20-token-streaming' as const,
+          type: 'erc20-token-stream' as const,
           data: erc20StreamingData,
         },
       };
@@ -127,7 +127,7 @@ export function createPermissionParams(
         },
       };
 
-    case 'native-token-streaming':
+    case 'native-token-stream':
       const nativeStreamingData: any = {
         amountPerSecond: parseEther(request.amount),
         justification: request.justification,
@@ -144,7 +144,7 @@ export function createPermissionParams(
       return {
         ...baseParams,
         permission: {
-          type: 'native-token-streaming' as const,
+          type: 'native-token-stream' as const,
           data: nativeStreamingData,
         },
       };
@@ -248,9 +248,9 @@ export async function redeemPermission(
 export function formatPermissionType(type: PermissionType): string {
   const labels: Record<PermissionType, string> = {
     'erc20-token-periodic': 'ERC-20 Periodic',
-    'erc20-token-streaming': 'ERC-20 Streaming',
+    'erc20-token-stream': 'ERC-20 Streaming',
     'native-token-periodic': 'Native Token Periodic',
-    'native-token-streaming': 'Native Token Streaming',
+    'native-token-stream': 'Native Token Streaming',
   };
   return labels[type];
 }

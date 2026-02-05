@@ -60,7 +60,7 @@ export function PermissionRequestManager({
 
   const needsTokenAddress = permissionType.includes('erc20');
   const needsPeriodDuration = permissionType.includes('periodic');
-  const isStreaming = permissionType.includes('streaming');
+  const isStreaming = permissionType.includes('stream');
 
   const handleRequestPermission = async () => {
     if (!isConnected) {
@@ -189,9 +189,9 @@ export function PermissionRequestManager({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="erc20-token-periodic">ERC-20 Periodic (e.g., 10 USDC/day)</SelectItem>
-              <SelectItem value="erc20-token-streaming">ERC-20 Streaming (linear rate per second)</SelectItem>
+              <SelectItem value="erc20-token-stream">ERC-20 Streaming (linear rate per second)</SelectItem>
               <SelectItem value="native-token-periodic">Native Token Periodic (e.g., 0.01 ETH/day)</SelectItem>
-              <SelectItem value="native-token-streaming">Native Token Streaming (linear rate per second)</SelectItem>
+              <SelectItem value="native-token-stream">Native Token Streaming (linear rate per second)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -214,7 +214,7 @@ export function PermissionRequestManager({
 
         <div className="space-y-2">
           <Label htmlFor="amount">
-            {permissionType.includes('streaming') 
+            {permissionType.includes('stream') 
               ? (permissionType.includes('native') ? 'Amount Per Second (ETH)' : 'Amount Per Second')
               : (permissionType.includes('native') ? 'Amount (ETH)' : 'Amount')
             }
@@ -225,7 +225,7 @@ export function PermissionRequestManager({
             step="0.000001"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder={permissionType.includes('streaming') ? "0.0001" : (permissionType.includes('native') ? "0.01" : "10")}
+            placeholder={permissionType.includes('stream') ? "0.0001" : (permissionType.includes('native') ? "0.01" : "10")}
           />
         </div>
 
