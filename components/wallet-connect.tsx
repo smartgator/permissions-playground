@@ -1,15 +1,16 @@
 'use client';
 
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import { sepolia } from 'wagmi/chains';
 import { Button } from '@/components/ui/button';
-import { Wallet, LogOut } from 'lucide-react';
+import { Wallet, LogOut, ArrowLeftRight } from 'lucide-react';
 
 export function WalletConnect() {
   const { address, isConnected, chainId } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
 
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -25,8 +26,19 @@ export function WalletConnect() {
             <div className={`w-2 h-2 rounded-full ${isWrongChain ? 'bg-red-500' : 'bg-green-500'}`} />
             <span className="font-mono text-sm">{formatAddress(address)}</span>
           </div>
-          <Button 
-            variant="outline" 
+          {isWrongChain && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => switchChain({ chainId: sepolia.id })}
+              className="border-red-300 text-red-700 hover:bg-red-50"
+            >
+              <ArrowLeftRight className="w-4 h-4 mr-2" />
+              Switch to Sepolia
+            </Button>
+          )}
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => disconnect()}
           >
@@ -34,17 +46,6 @@ export function WalletConnect() {
             Disconnect
           </Button>
         </div>
-        
-        {isWrongChain && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-700 font-medium">
-              ⚠️ Wrong Network
-            </p>
-            <p className="text-xs text-red-600 mt-1">
-              Please switch to Sepolia testnet in MetaMask to use this app
-            </p>
-          </div>
-        )}
       </div>
     );
   }
