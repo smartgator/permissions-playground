@@ -1,13 +1,12 @@
 import { createPublicClient, http, parseUnits, parseEther, encodeFunctionData, erc20Abi } from 'viem';
 import { sepolia } from 'wagmi/chains';
-import { 
-  toMetaMaskSmartAccount, 
+import {
+  toMetaMaskSmartAccount,
   Implementation,
-  createDelegation,
 } from '@metamask/smart-accounts-kit';
-import { 
+import {
   erc7715ProviderActions,
-  erc7710BundlerActions 
+  erc7710BundlerActions
 } from '@metamask/smart-accounts-kit/actions';
 import { createBundlerClient } from 'viem/account-abstraction';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -28,7 +27,7 @@ export function createSepoliaClient(): PublicClient {
 // Create session account
 export async function createSessionAccount(signerAccount: ReturnType<typeof privateKeyToAccount>) {
   const client = createSepoliaClient();
-  
+
   const sessionAccount = await toMetaMaskSmartAccount({
     client,
     implementation: Implementation.Hybrid,
@@ -36,12 +35,12 @@ export async function createSessionAccount(signerAccount: ReturnType<typeof priv
     deploySalt: '0x',
     signer: { account: signerAccount },
   });
-  
+
   return sessionAccount;
 }
 
 // Permission types supported by MetaMask
-export type PermissionType = 
+export type PermissionType =
   | 'erc20-token-periodic'
   | 'erc20-token-stream'
   | 'native-token-periodic'
@@ -69,11 +68,7 @@ export function createPermissionParams(
   const baseParams = {
     chainId: sepolia.id,
     expiry,
-    signer: {
-      type: 'account' as const,
-      data: { address: sessionAccountAddress },
-    },
-    isAdjustmentAllowed,
+    to: sessionAccountAddress,
   };
 
   switch (request.type) {
@@ -88,6 +83,7 @@ export function createPermissionParams(
             periodDuration: request.periodDuration || 86400,
             justification: request.justification,
           },
+          isAdjustmentAllowed,
         },
       };
 
@@ -112,6 +108,7 @@ export function createPermissionParams(
           type: 'erc20-token-stream' as const,
           data: erc20StreamingData,
         },
+        isAdjustmentAllowed,
       };
 
     case 'native-token-periodic':
@@ -124,6 +121,7 @@ export function createPermissionParams(
             periodDuration: request.periodDuration || 86400,
             justification: request.justification,
           },
+          isAdjustmentAllowed,
         },
       };
 
@@ -147,6 +145,7 @@ export function createPermissionParams(
           type: 'native-token-stream' as const,
           data: nativeStreamingData,
         },
+        isAdjustmentAllowed,
       };
 
     default:
@@ -160,9 +159,9 @@ export async function requestPermissions(
   permissionParams: ReturnType<typeof createPermissionParams>
 ) {
   const client = walletClient.extend(erc7715ProviderActions());
-  
+
   const grantedPermissions = await client.requestExecutionPermissions([permissionParams]);
-  
+
   return grantedPermissions;
 }
 
@@ -184,7 +183,7 @@ export async function redeemPermission(
   sessionAccount: Awaited<ReturnType<typeof createSessionAccount>>,
   grantedPermission: {
     context: Hex;
-    signerMeta: { delegationManager: Address } | { delegationManager?: Address; userOpBuilder?: Address };
+    delegationManager: Address;
   },
   transferParams: {
     to: Address;
@@ -193,7 +192,7 @@ export async function redeemPermission(
   }
 ) {
   const publicClient = createSepoliaClient();
-  
+
   // Create bundler client with permission actions
   const bundlerClient = createBundlerClient({
     client: publicClient,
@@ -203,7 +202,7 @@ export async function redeemPermission(
 
   // Encode transfer calldata
   const isNativeToken = !transferParams.tokenAddress;
-  
+
   let calldata: Hex;
   if (isNativeToken) {
     // Native token transfer
@@ -218,9 +217,7 @@ export async function redeemPermission(
   }
 
   // Extract delegationManager from signerMeta
-  const delegationManager = 'delegationManager' in grantedPermission.signerMeta 
-    ? grantedPermission.signerMeta.delegationManager 
-    : undefined;
+  const delegationManager = grantedPermission.delegationManager || undefined;
 
   if (!delegationManager) {
     throw new Error('delegationManager not found in granted permission');
@@ -234,7 +231,7 @@ export async function redeemPermission(
       {
         to: transferParams.tokenAddress || transferParams.to,
         data: calldata,
-        permissionsContext: grantedPermission.context,
+        permissionContext: grantedPermission.context,
         delegationManager,
         value: isNativeToken ? parseEther(transferParams.amount) : 0n,
       },

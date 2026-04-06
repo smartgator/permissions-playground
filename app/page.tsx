@@ -11,7 +11,7 @@ import type { Hex, Address } from "viem";
 
 interface GrantedPermission {
   context: Hex;
-  signerMeta: any;
+  delegationManager: Address;
   params: PermissionRequest;
 }
 
@@ -48,10 +48,10 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Permissions Playground
+            Advanced Permissions Playground
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Explore MetaMask Smart Accounts with ERC-7715 permissions. 
+            Explore MetaMask Smart Accounts with Advanced Permissions.
             Request and redeem permissions for ERC-20 and native token transfers on Sepolia.
           </p>
         </div>
@@ -59,27 +59,23 @@ export default function Home() {
         {/* Progress Steps */}
         <div className="flex justify-center mb-12">
           <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-              stepStatus > 1 ? "bg-green-500 text-white" : stepStatus === 1 ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-600"
-            }`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${stepStatus > 1 ? "bg-green-500 text-white" : stepStatus === 1 ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-600"
+              }`}>
               1
             </div>
             <div className={`w-12 h-0.5 ${stepStatus > 1 ? "bg-green-500" : "bg-gray-300"}`}></div>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-              stepStatus > 2 ? "bg-green-500 text-white" : stepStatus === 2 ? "bg-blue-600 text-white" : stepStatus > 2 ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
-            }`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${stepStatus > 2 ? "bg-green-500 text-white" : stepStatus === 2 ? "bg-blue-600 text-white" : stepStatus > 2 ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
+              }`}>
               2
             </div>
             <div className={`w-12 h-0.5 ${stepStatus > 2 ? "bg-green-500" : "bg-gray-300"}`}></div>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-              stepStatus > 3 ? "bg-green-500 text-white" : stepStatus === 3 ? "bg-blue-600 text-white" : stepStatus === 4 ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
-            }`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${stepStatus > 3 ? "bg-green-500 text-white" : stepStatus === 3 ? "bg-blue-600 text-white" : stepStatus === 4 ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
+              }`}>
               3
             </div>
             <div className={`w-12 h-0.5 ${stepStatus > 3 ? "bg-green-500" : "bg-gray-300"}`}></div>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-              stepStatus === 4 ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
-            }`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${stepStatus === 4 ? "bg-green-500 text-white" : "bg-gray-300 text-gray-600"
+              }`}>
               4
             </div>
           </div>
@@ -111,7 +107,7 @@ export default function Home() {
           {/* Step 2: Create Session Account */}
           {isConnected && (
             <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <SessionAccountManager 
+              <SessionAccountManager
                 onSessionAccountCreated={handleSessionAccountCreated}
                 sessionAccount={sessionAccount}
               />
@@ -121,7 +117,7 @@ export default function Home() {
           {/* Step 3: Request Permission */}
           {isConnected && sessionAccount && (
             <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <PermissionRequestManager 
+              <PermissionRequestManager
                 sessionAccount={sessionAccount}
                 onPermissionGranted={handlePermissionGranted}
                 grantedPermission={grantedPermission}
@@ -132,13 +128,13 @@ export default function Home() {
           {/* Step 4: Redeem Permission */}
           {isConnected && sessionAccount && (
             <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <PermissionRedeem 
+              <PermissionRedeem
                 sessionAccount={sessionAccount}
                 grantedPermission={grantedPermission}
               />
               {grantedPermission && (
                 <div className="mt-4 text-center">
-                  <button 
+                  <button
                     onClick={handleClearPermission}
                     className="text-sm text-red-500 hover:text-red-700 underline"
                   >
@@ -153,7 +149,7 @@ export default function Home() {
         {/* Info Footer */}
         <footer className="mt-12 text-center text-sm text-gray-500">
           <p className="mb-2">
-            Built with Next.js 15, Wagmi v2, and MetaMask Smart Accounts Kit v0.3.0
+            Built with Next.js 15, Wagmi v2, and MetaMask Smart Accounts Kit v1.0.0
           </p>
           <p>
             Test on Sepolia. USDC Contract: 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238

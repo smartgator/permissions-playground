@@ -15,7 +15,7 @@ interface PermissionRedeemProps {
   sessionAccount: Awaited<ReturnType<typeof createSessionAccount>> | null;
   grantedPermission: {
     context: Hex;
-    signerMeta: { delegationManager: Address } | { delegationManager?: Address; userOpBuilder?: Address };
+    delegationManager: Address;
     params: PermissionRequest;
   } | null;
 }
