@@ -9,6 +9,7 @@ import {
   erc7710BundlerActions
 } from '@metamask/smart-accounts-kit/actions';
 import { createBundlerClient } from 'viem/account-abstraction';
+import { createPimlicoClient } from 'permissionless/clients/pimlico';
 import { privateKeyToAccount } from 'viem/accounts';
 import type { Address, Hex } from 'viem';
 import type { WalletClient, PublicClient } from 'viem';
@@ -223,10 +224,18 @@ export async function redeemPermission(
     throw new Error('delegationManager not found in granted permission');
   }
 
+  // Fetch current gas price from Pimlico
+  const pimlicoClient = createPimlicoClient({
+    transport: http(getBundlerUrl()),
+  });
+  const { fast: gasPrice } = await pimlicoClient.getUserOperationGasPrice();
+
   // Send user operation with delegation
   const userOpHash = await bundlerClient.sendUserOperationWithDelegation({
     publicClient: publicClient as any,
     account: sessionAccount,
+    maxFeePerGas: gasPrice.maxFeePerGas,
+    maxPriorityFeePerGas: gasPrice.maxPriorityFeePerGas,
     calls: [
       {
         to: transferParams.tokenAddress || transferParams.to,
@@ -238,7 +247,9 @@ export async function redeemPermission(
     ],
   });
 
-  return userOpHash;
+  const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: userOpHash });
+
+  return receipt.receipt.transactionHash;
 }
 
 // Format permission type for display
